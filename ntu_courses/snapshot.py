@@ -90,7 +90,7 @@ class Archive:
             fname = key.replace(";", "_") + ".json.gz"
             digest = _hash(data)
             entry = {
-                "file": fname, "sha256": digest, "fetched_at": data["fetched_at"],
+                "label": data["semester"].get("label", ""), "file": fname, "sha256": digest, "fetched_at": data["fetched_at"],
                 "programmes": len(data["programmes"]), "courses": len(data["courses"]),
                 "indexes": sum(len(c["indexes"]) for c in data["courses"].values()),
                 "errors": data["errors"],

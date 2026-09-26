@@ -86,3 +86,22 @@ def test_merge(schedule, content):
     assert set(merged) == set(schedule) | set(content)
     sc1005 = merged["SC1005"]
     assert sc1005.indexes and sc1005.description and sc1005.is_bde
+
+
+@pytest.mark.parametrize("text", [
+    "2026;1", "2026_1", "2026-1", "2026 1", "20261", " 2026 ; 1 ",
+    "Acad Yr 2026 Semester 1", "acad yr 2026  semester 1",
+])
+def test_find_semester_accepts_key_or_label(text):
+    from ntu_courses.models import find_semester
+    sem = find_semester(text, parsers.parse_semesters(load("schedule_main.html")))
+    assert (sem.year, sem.sem, sem.label) == (2026, "1", "Acad Yr 2026 Semester 1")
+
+
+def test_find_semester_special_term_and_unknown():
+    from ntu_courses.models import Semester, find_semester
+    sems = parsers.parse_semesters(load("schedule_main.html"))
+    assert find_semester("2025_s", sems).label == "Acad Yr 2025 Special Term"
+    assert find_semester("Acad Yr 2025 Special Term", sems) == Semester(2025, "S")
+    assert find_semester("2019_1", sems) is None
+    assert find_semester("Semester 1", sems) is None

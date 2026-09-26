@@ -21,24 +21,32 @@ pip install -r requirements.txt
 
 ## Commands
 
-`--sem` takes the form `2026;1`, `2025;2` or `2025;S` (Special Term). If omitted, the latest semester is used.
+`--sem` accepts either the semester key or the label shown on the NTU site (case-insensitive). If omitted, the first semester in the site's dropdown (the latest) is used.
+
+| Key | Label |
+|---|---|
+| `2026_1` | `"Acad Yr 2026 Semester 1"` |
+| `2025_2` | `"Acad Yr 2025 Semester 2"` |
+| `2025_S` | `"Acad Yr 2025 Special Term"` |
+
+Keys may also be written `2026-1` or `2026;1`. In a shell, `;` separates commands, so the `;` form must be quoted (`'2026;1'`). Run `python -m ntu_courses semesters` for the full list.
 
 ```bash
-# Semesters offered on the site
+# Semesters offered on the site (key and label)
 python -m ntu_courses semesters
 
 # Programme/year options for a semester; -f filters by keyword
-python -m ntu_courses programmes --sem 2026;1 -f computer
+python -m ntu_courses programmes --sem 2026_1 -f computer
 
 # Live view of a programme/year; -c shows one course, --no-desc hides descriptions
-python -m ntu_courses show -p 'CSC;;1;F' --sem 2026;1 -c SC1005
+python -m ntu_courses show -p 'CSC;;1;F' --sem "Acad Yr 2026 Semester 1" -c SC1005
 
 # Search the class schedule by course code or keyword
-python -m ntu_courses search SC100 --sem 2026;1
+python -m ntu_courses search SC100 --sem 2026_1
 
 # Crawl and archive (writes a new snapshot)
 python -m ntu_courses crawl                           # latest semester
-python -m ntu_courses crawl --sem 2025;2 --sem 2025;1 # specific semesters (repeatable)
+python -m ntu_courses crawl --sem 2025_2 --sem 2025_S # specific semesters (repeatable)
 python -m ntu_courses crawl --all                     # every semester in the dropdown
 python -m ntu_courses crawl --limit 5 --data /tmp/t   # trial run: first 5 programmes, temp directory
 

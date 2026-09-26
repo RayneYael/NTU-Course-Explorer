@@ -1,18 +1,19 @@
 """Command line entry: python -m ntu_courses <command> ...
 
-  semesters                              list available terms
-  programmes [--sem 2026;1] [-f text]    list programme/year options for a term
-  show -p 'CSC;;1;F' [--sem 2026;1] [-c SC1005] [--no-desc]
+  semesters                              list available terms (key and label)
+  programmes [--sem 2026_1] [-f text]    list programme/year options for a term
+  show -p 'CSC;;1;F' [--sem 2026_1] [-c SC1005] [--no-desc]
                                          print courses of a programme (schedule + content)
-  search KEYWORD [--sem 2026;1]          search schedule by course code / keyword
-  crawl [--sem 2026;1 ...] [--all]       crawl whole semester(s) into a new snapshot (default: latest)
+  search KEYWORD [--sem 2026_1]          search schedule by course code / keyword
+  crawl [--sem 2026_1 ...] [--all]       crawl whole semester(s) into a new snapshot (default: latest)
   snapshots                              list saved snapshots
+
+--sem accepts a key (2026_1, 2026;1, 2025_S) or the site's label ("Acad Yr 2026 Semester 1").
 """
 from __future__ import annotations
 
 import argparse
 import logging
-import re
 import sys
 import textwrap
 
@@ -20,19 +21,18 @@ from . import parsers
 from .client import NTUClient
 from .crawler import crawl_semester
 from .snapshot import Archive
-from .models import Course, Semester
+from .models import Course, Semester, find_semester
 
 
 def _sem(client: NTUClient, value: str | None) -> Semester:
     sems = client.semesters()
     if not value:
         return sems[0]
-    m = re.fullmatch(r"(\d{4})[;_ /-]?(\w)", value.strip())
-    if not m:
-        sys.exit(f"bad --sem {value!r}, expected e.g. 2026;1 or 2025;S")
-    sem = Semester(int(m.group(1)), m.group(2).upper())
-    if sem not in {Semester(s.year, s.sem) for s in sems}:
-        sys.exit(f"{sem} not offered; available: {', '.join(map(str, sems))}")
+    sem = find_semester(value, sems)
+    if sem is None:
+        offered = "\n".join(f"  {s.content_key:8} {s.label}" for s in sems)
+        sys.exit(f"unknown semester {value!r}. Use a key or a label, e.g. 2026_1 or "
+                 f"'Acad Yr 2026 Semester 1'. Offered:\n{offered}")
     return sem
 
 
@@ -82,7 +82,7 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.cmd == "semesters":
         for s in client.semesters():
-            print(f"{s.schedule_key:8} {s.label}")
+            print(f"{s.content_key:8} {s.label}")
     elif args.cmd == "programmes":
         sem = _sem(client, args.sem)
         for p in client.programmes(sem):
@@ -96,7 +96,7 @@ def main(argv: list[str] | None = None) -> None:
         courses = client.courses(sem, progs[args.programme])
         if args.code:
             courses = [c for c in courses if c.code == args.code.upper()]
-        print(f"{sem}  {progs[args.programme].label}: {len(courses)} courses")
+        print(f"{sem.label}  {progs[args.programme].label}: {len(courses)} courses")
         for c in courses:
             _print_course(c, not args.no_desc)
     elif args.cmd == "search":
@@ -105,25 +105,22 @@ def main(argv: list[str] | None = None) -> None:
             _print_course(c, False)
     elif args.cmd == "crawl":
         sems = client.semesters() if args.all else [_sem(client, v) for v in (args.sem or [None])]
-        labels = {(s.year, s.sem): s.label for s in client.semesters()}
-        results = []
-        for sem in sems:
-            sem = Semester(sem.year, sem.sem, labels.get((sem.year, sem.sem), sem.label))
-            results.append(crawl_semester(client, sem, limit=args.limit))
+        results = [crawl_semester(client, sem, limit=args.limit) for sem in sems]
         archive = Archive(args.data)
         name = archive.write(results)
         m = archive.manifest(name)
         print(f"snapshot {name} ({'complete' if m['complete'] else 'INCOMPLETE, LATEST not moved'})")
         for key, e in m["semesters"].items():
             note = f"unchanged, stored in {e['stored_in']}" if "stored_in" in e else e["file"]
-            print(f"  {key}: {e['programmes']} programmes, {e['courses']} courses, "
+            print(f"  {e.get('label') or key}: {e['programmes']} programmes, {e['courses']} courses, "
                   f"{e['indexes']} indexes, {len(e['errors'])} errors  [{note}]")
     elif args.cmd == "snapshots":
         archive = Archive(args.data)
         latest = archive.latest()
         for name in archive.list():
             m = archive.manifest(name)
-            sems = ", ".join(f"{k}{'=' if 'stored_in' in e else ''}" for k, e in m["semesters"].items())
+            sems = ", ".join(f"{e.get('label') or k}{' (unchanged)' if 'stored_in' in e else ''}"
+                             for k, e in m["semesters"].items())
             print(f"{'*' if name == latest else ' '} {name}  complete={m['complete']}  {sems}")
 
 

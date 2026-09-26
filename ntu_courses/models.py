@@ -1,6 +1,7 @@
 """Data models for NTU course information."""
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field, asdict
 
 
@@ -9,7 +10,7 @@ class Semester:
     """An academic term, e.g. year=2026, sem='1' (sem may be '1', '2' or 'S')."""
     year: int
     sem: str
-    label: str = ""
+    label: str = field(default="", compare=False)  # display name, e.g. 'Acad Yr 2026 Semester 1'
 
     @property
     def schedule_key(self) -> str:   # format used by AUS_SCHEDULE
@@ -21,6 +22,25 @@ class Semester:
 
     def __str__(self) -> str:
         return self.schedule_key
+
+
+def find_semester(value: str, semesters: list[Semester]) -> Semester | None:
+    """Resolve user input to one of `semesters` (those offered by the site).
+
+    Accepts the key in any common form ('2026;1', '2026_1', '2026-1', '2026 1', '2025;s')
+    or the site's label, case-insensitive ('Acad Yr 2026 Semester 1').
+    """
+    text = " ".join(value.split()).lower()
+    for s in semesters:
+        if s.label and " ".join(s.label.split()).lower() == text:
+            return s
+    m = re.fullmatch(r"(\d{4})\s*[;_/ -]?\s*(\w)", text)
+    if m:
+        year, sem = int(m.group(1)), m.group(2).upper()
+        for s in semesters:
+            if (s.year, s.sem) == (year, sem):
+                return s
+    return None
 
 
 @dataclass(frozen=True)

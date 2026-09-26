@@ -21,24 +21,32 @@ pip install -r requirements.txt
 
 ## 常用命令
 
-`--sem` 的写法为 `2026;1`、`2025;2`、`2025;S`（Special Term）。不写时默认使用最新学期。
+`--sem` 可以写学期编号，也可以写 NTU 网站上显示的学期名称（不区分大小写）。不写时默认使用网站下拉框的第一项，也就是最新学期。
+
+| 编号 | 名称 |
+|---|---|
+| `2026_1` | `"Acad Yr 2026 Semester 1"` |
+| `2025_2` | `"Acad Yr 2025 Semester 2"` |
+| `2025_S` | `"Acad Yr 2025 Special Term"` |
+
+编号也可以写成 `2026-1` 或 `2026;1`。注意分号在 shell 里是命令分隔符，用分号写法时必须加引号（`'2026;1'`）。完整列表可以用 `python -m ntu_courses semesters` 查看。
 
 ```bash
-# 查看网站上可选的学期
+# 查看网站上可选的学期（编号和名称）
 python -m ntu_courses semesters
 
 # 查看某学期的专业/年级列表，-f 按关键字过滤
-python -m ntu_courses programmes --sem 2026;1 -f computer
+python -m ntu_courses programmes --sem 2026_1 -f computer
 
 # 实时查看某个专业/年级的课程；-c 只看一门课，--no-desc 不显示描述
-python -m ntu_courses show -p 'CSC;;1;F' --sem 2026;1 -c SC1005
+python -m ntu_courses show -p 'CSC;;1;F' --sem "Acad Yr 2026 Semester 1" -c SC1005
 
 # 按课程号或关键字搜索课表
-python -m ntu_courses search SC100 --sem 2026;1
+python -m ntu_courses search SC100 --sem 2026_1
 
 # 抓取并存档（写入一个新快照）
 python -m ntu_courses crawl                           # 最新学期
-python -m ntu_courses crawl --sem 2025;2 --sem 2025;1 # 指定学期，可重复
+python -m ntu_courses crawl --sem 2025_2 --sem 2025_S # 指定学期，可重复
 python -m ntu_courses crawl --all                     # 下拉框里的全部学期
 python -m ntu_courses crawl --limit 5 --data /tmp/t   # 试跑：只抓前 5 个专业，写到临时目录
 
