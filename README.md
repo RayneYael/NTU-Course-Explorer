@@ -8,7 +8,7 @@ Browse NTU undergraduate courses by semester and programme: class schedules, cou
 
 ## Features
 
-- Every programme, year, minor and elective group, for each crawled semester
+- Every programme, year, minor and elective group, for every available semester
 - Search by course code, title or description
 - Course details: AU, prerequisites, restrictions and description
 - All class indexes, with a weekly timetable
@@ -36,25 +36,13 @@ cd web && pnpm install && pnpm dev   # open the local URL it prints
 | `python -m ntu_courses crawl --sem 2025_2` | Scrape a specific semester |
 | `python -m ntu_courses crawl --all` | Scrape every semester |
 | `python -m ntu_courses export-web` | Export data for the web app |
-| `python -m ntu_courses semesters` | List available semesters |
-| `python -m ntu_courses show -p 'CSC;;1;F'` | Print one programme's courses |
-| `python -m ntu_courses search SC1005` | Search the live class schedule |
 
 `--sem` takes a key such as `2026_1` or the site's name, e.g. `"Acad Yr 2026 Semester 1"`.
-Each crawl is saved as a new snapshot in `data/`; earlier ones are kept.
-
-## Deploy
-
-```bash
-scripts/deploy_pages.sh
-```
-
-Builds the site with the latest data and publishes it to GitHub Pages (`gh-pages` branch).
 
 ## Project structure
 
 ```
 ntu_courses/   Python scraper and CLI
 web/           React web app
-scripts/       deployment script
+scripts/       maintenance scripts
 ```

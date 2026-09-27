@@ -8,7 +8,7 @@
 
 ## 功能
 
-- 覆盖每个已抓取学期的所有专业、年级、辅修和选修类别
+- 覆盖所有可查学期的全部专业、年级、辅修和选修类别
 - 按课程号、课程名或描述搜索
 - 课程详情：学分、先修要求、选课限制和课程描述
 - 全部 index，并可查看每周课表
@@ -36,25 +36,13 @@ cd web && pnpm install && pnpm dev   # 打开终端里显示的本地地址
 | `python -m ntu_courses crawl --sem 2025_2` | 抓取指定学期 |
 | `python -m ntu_courses crawl --all` | 抓取全部学期 |
 | `python -m ntu_courses export-web` | 为网页导出数据 |
-| `python -m ntu_courses semesters` | 列出可选学期 |
-| `python -m ntu_courses show -p 'CSC;;1;F'` | 查看某个专业的课程 |
-| `python -m ntu_courses search SC1005` | 在线搜索课表 |
 
 `--sem` 可以写编号（如 `2026_1`），也可以写网站上的学期名称（如 `"Acad Yr 2026 Semester 1"`）。
-每次抓取都会在 `data/` 里保存一个新快照，旧的快照会保留。
-
-## 部署
-
-```bash
-scripts/deploy_pages.sh
-```
-
-用最新数据构建网站，并发布到 GitHub Pages（`gh-pages` 分支）。
 
 ## 项目结构
 
 ```
 ntu_courses/   Python 爬虫和命令行
 web/           React 网页
-scripts/       部署脚本
+scripts/       维护脚本
 ```
