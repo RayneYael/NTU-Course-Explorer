@@ -2,6 +2,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { loadAnalytics } from './lib/analytics'
+
+loadAnalytics()
 
 // Loaded at runtime rather than via <link> in index.html so the single-file bundle
 // (html-inline) doesn't try to inline a remote stylesheet.

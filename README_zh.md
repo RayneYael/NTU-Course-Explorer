@@ -185,6 +185,12 @@ scripts/deploy_pages.sh --dry-run  # 同上，但只在本地提交，不推送
 
 日常更新流程：先 `python -m ntu_courses crawl`，再 `scripts/deploy_pages.sh`。
 
+### 访问量统计
+
+Pages 网站会把访问记录发送到 [GoatCounter](https://www.goatcounter.com)（站点 `rayneyael`，配置在 `web/src/lib/analytics.ts`）。只有在 `rayneyael.github.io` 上才会统计；本地开发、`bundle.html` 和 claude.ai 预览都不会加载统计脚本。在 GoatCounter 设置里打开 "Allow adding visitor counts on your website" 后，页面顶部会显示总访问量（数字最多有 4 小时缓存）。同一个人 8 小时内刷新或重复访问只算一次。
+
+要排除你自己的访问，在每个常用的浏览器里打开一次 `https://rayneyael.github.io/NTU-Course-Explorer/#toggle-goatcounter`（再打开一次即恢复统计），或者在 Settings → Tracking → Ignore IPs 里填上你的 IP。
+
 ## 测试
 
 ```bash

@@ -8,6 +8,7 @@ import { ProgrammePicker } from "@/components/ProgrammePicker"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet"
+import { fetchVisitCount } from "@/lib/analytics"
 import { fetchSemester, fetchSemesters, formatFetched, listingsFor, search, visibleIndexes } from "@/lib/data"
 import { cn } from "@/lib/utils"
 import type { SemesterData, SemesterInfo } from "@/types"
@@ -26,6 +27,11 @@ export default function App() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const wide = useMediaQuery("(min-width: 1024px)")
   const searchRef = useRef<HTMLInputElement>(null)
+  const [visits, setVisits] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchVisitCount().then(setVisits)
+  }, [])
 
   // semesters index
   useEffect(() => {
@@ -115,6 +121,7 @@ export default function App() {
             {semester && (
               <p className="text-xs text-muted-foreground">
                 Data fetched {formatFetched(semester.fetched_at)} from NTU's public class schedule
+                {visits && <span className="tabular"> · {visits} visits</span>}
               </p>
             )}
           </div>

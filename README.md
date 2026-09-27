@@ -185,6 +185,12 @@ The script runs `export-web` and the single-file build, then commits `index.html
 
 Typical update: `python -m ntu_courses crawl`, then `scripts/deploy_pages.sh`.
 
+### Visit counter
+
+The Pages site reports page views to [GoatCounter](https://www.goatcounter.com) (site `rayneyael`, configured in `web/src/lib/analytics.ts`). Tracking runs only on `rayneyael.github.io`; local dev, `bundle.html` and the claude.ai preview load nothing. The header shows the total visit count once "Allow adding visitor counts on your website" is enabled in the GoatCounter settings (the number is cached for up to four hours). A reload or revisit within eight hours counts as one visit.
+
+To exclude your own visits, open `https://rayneyael.github.io/NTU-Course-Explorer/#toggle-goatcounter` once in each browser you use (open it again to re-enable counting), or add your IP under Settings → Tracking → Ignore IPs.
+
 ## Tests
 
 ```bash
