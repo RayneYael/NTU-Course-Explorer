@@ -7,6 +7,7 @@
   search KEYWORD [--sem 2026_1]          search schedule by course code / keyword
   crawl [--sem 2026_1 ...] [--all]       crawl whole semester(s) into a new snapshot (default: latest)
   snapshots                              list saved snapshots
+  export-web [--out web/public/data]     write the newest data of every crawled semester for the web UI
 
 --sem accepts a key (2026_1, 2026;1, 2025_S) or the site's label ("Acad Yr 2026 Semester 1").
 """
@@ -20,6 +21,7 @@ import textwrap
 from . import parsers
 from .client import NTUClient
 from .crawler import crawl_semester
+from .export import export_web
 from .snapshot import Archive
 from .models import Course, Semester, find_semester
 
@@ -75,9 +77,20 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--data", default="data")
     p = sub.add_parser("snapshots")
     p.add_argument("--data", default="data")
+    p = sub.add_parser("export-web")
+    p.add_argument("--data", default="data")
+    p.add_argument("--out", default="web/public/data")
 
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
+    if args.cmd == "export-web":  # offline: reads the archive only
+        index = export_web(Archive(args.data), args.out)
+        if not index:
+            sys.exit(f"no successfully crawled semesters in {args.data}/; run `crawl` first")
+        for s in index:
+            print(f"{args.out}/{s['file']}  {s['label']}  ({s['programmes']} programmes, "
+                  f"{s['courses']} courses, fetched {s['fetched_at']})")
+        return
     client = NTUClient(delay=args.delay)
 
     if args.cmd == "semesters":

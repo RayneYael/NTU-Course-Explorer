@@ -58,3 +58,36 @@ def test_incomplete_snapshot_does_not_move_latest(archive):
     assert archive.manifest(bad)["complete"] is False
     assert archive.latest() == first
     assert not any(n.endswith(".tmp") for n in os.listdir(archive.snapshots))
+
+
+def labelled(key, label, **kw):
+    d = sem_data(key=key, **kw)
+    d["semester"]["label"] = label
+    return d
+
+
+def test_available_semesters_keeps_older_terms(archive):
+    archive.write([labelled("2025;2", "Acad Yr 2025 Semester 2"), labelled("2025;S", "Acad Yr 2025 Special Term")])
+    archive.write([labelled("2026;1", "Acad Yr 2026 Semester 1")])        # later crawl: latest term only
+    archive.write([labelled("2026;1", "Acad Yr 2026 Semester 1", title="NEW",
+                            errors=[{"programme": "X", "error": "timeout"}])])  # failed crawl ignored
+    sems = archive.available_semesters()
+    assert [s["label"] for s in sems] == \
+        ["Acad Yr 2026 Semester 1", "Acad Yr 2025 Special Term", "Acad Yr 2025 Semester 2"]
+    assert archive.load_current("2026;1")["courses"]["SC1005"]["title"] == "DIGITAL LOGIC"
+    with pytest.raises(KeyError):
+        archive.load_current("2024;1")
+
+
+def test_export_web(archive, tmp_path):
+    import json
+    from ntu_courses.export import export_web
+    archive.write([labelled("2026;1", "Acad Yr 2026 Semester 1")])
+    out = tmp_path / "web"
+    (out).mkdir()
+    (out / "2019_1.json").write_text("{}")                                  # stale file is removed
+    index = export_web(archive, out)
+    assert [s["file"] for s in index] == ["2026_1.json"]
+    assert sorted(p.name for p in out.iterdir()) == ["2026_1.json", "semesters.json"]
+    data = json.loads((out / "2026_1.json").read_text())
+    assert data["semester"]["key"] == "2026_1" and "SC1005" in data["courses"]

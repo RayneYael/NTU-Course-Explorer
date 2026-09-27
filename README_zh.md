@@ -52,6 +52,9 @@ python -m ntu_courses crawl --limit 5 --data /tmp/t   # 试跑：只抓前 5 个
 
 # 列出已保存的快照（* 为当前 LATEST）
 python -m ntu_courses snapshots
+
+# 为网页界面导出每个已抓取学期的最新数据（不联网）
+python -m ntu_courses export-web
 ```
 
 全局参数 `--delay`（默认 0.5 秒）控制两次请求之间的最小间隔，要放在子命令前面，例如 `python -m ntu_courses --delay 1 crawl`。一个学期大约有 680 个专业/年级，全量抓取约 15–20 分钟。建议把输出重定向到日志文件：
@@ -143,6 +146,34 @@ client = NTUClient()
 courses = client.courses(Semester(2026, "1"), "CSC;;1;F")   # 返回 list[Course]
 ```
 
+## 网页界面
+
+`web/` 是一个 React + TypeScript + Tailwind + shadcn/ui 应用（用 `web-artifacts-builder` skill 搭建）。可以选择学期（所有抓取过的学期都会出现，显示 NTU 网站上的学期名称）和专业（包括没有排课的专业），按课程号、课程名或描述搜索，打开一门课可以看到详细信息、全部 index，以及所选 index 的每周课表。
+
+它读取的是静态 JSON 文件，没有后端。先导出每个已抓取学期的最新数据：
+
+```bash
+python -m ntu_courses export-web      # 生成 web/public/data/semesters.json 和各学期的 <编号>.json
+```
+
+然后在 Node 20+ 和 pnpm 环境下：
+
+```bash
+cd web
+pnpm install
+pnpm dev            # 开发服务器，支持热更新
+pnpm run bundle     # 打包成单个文件：bundle.html（另有给 claude.ai 用的 dist/artifact.html）
+```
+
+`bundle.html` 包含整个应用，但不包含数据。部署时把它和存放导出 JSON 的 `data/` 文件夹放在一起，用任意静态文件服务器提供访问，例如：
+
+```bash
+mkdir -p site && cp web/bundle.html site/index.html && cp -r web/public/data site/
+python -m http.server -d site 8000
+```
+
+每次抓取后重新运行一次 `export-web`；之前抓过的学期仍会保留在下拉框里。
+
 ## 测试
 
 ```bash
@@ -161,5 +192,10 @@ ntu_courses/
   client.py     HTTP 请求（重试、限速）、两个网站之间的专业代码对应、按课程号补全描述
   crawler.py    整个学期的抓取与去重，旧格式数据的转换
   snapshot.py   快照存档的读写
+  export.py     为网页界面导出静态 JSON
   __main__.py   命令行
+web/
+  src/lib/data.ts        数据加载、专业分组、搜索、时间处理
+  src/components/        专业选择器、课程列表、课程详情、每周课表
+  scripts/bundle.sh      单文件打包
 ```

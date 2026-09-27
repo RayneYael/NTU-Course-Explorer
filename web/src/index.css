@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Theme tokens (HSL triplets, consumed by Tailwind as hsl(var(--x))).
+ * Light palette on bare :root; dark palette for the OS setting (unless the viewer forced
+ * light) and again for an explicit data-theme="dark".
+ */
+@layer base {
+  :root {
+    --background: 150 10% 96%;      /* paper  #F4F6F5 */
+    --foreground: 160 11% 12%;      /* ink    #1C2321 */
+    --card: 0 0% 100%;
+    --card-foreground: 160 11% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 11% 12%;
+    --primary: 161 82% 24%;         /* jade   #0B6E4F */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 150 10% 92%;
+    --secondary-foreground: 160 11% 12%;
+    --muted: 150 10% 92%;
+    --muted-foreground: 154 6% 38%;
+    --accent: 160 32% 91%;
+    --accent-foreground: 160 11% 12%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 150 8% 86%;           /* hairline #D9DFDC */
+    --input: 150 8% 82%;
+    --ring: 161 82% 24%;
+    --elective: 28 91% 34%;         /* amber  #A5500A */
+    --elective-soft: 38 92% 92%;
+    --block: 161 60% 90%;
+    --radius: 0.375rem;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --background: 160 12% 8%;
+      --foreground: 150 12% 90%;
+      --card: 160 10% 11%;
+      --card-foreground: 150 12% 90%;
+      --popover: 160 10% 12%;
+      --popover-foreground: 150 12% 90%;
+      --primary: 158 50% 52%;
+      --primary-foreground: 160 30% 8%;
+      --secondary: 160 8% 17%;
+      --secondary-foreground: 150 12% 90%;
+      --muted: 160 8% 16%;
+      --muted-foreground: 152 8% 63%;
+      --accent: 160 20% 18%;
+      --accent-foreground: 150 12% 92%;
+      --destructive: 0 70% 60%;
+      --destructive-foreground: 0 0% 100%;
+      --border: 160 8% 20%;
+      --input: 160 8% 26%;
+      --ring: 158 50% 52%;
+      --elective: 38 85% 62%;
+      --elective-soft: 35 45% 16%;
+      --block: 160 35% 20%;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --background: 160 12% 8%;
+    --foreground: 150 12% 90%;
+    --card: 160 10% 11%;
+    --card-foreground: 150 12% 90%;
+    --popover: 160 10% 12%;
+    --popover-foreground: 150 12% 90%;
+    --primary: 158 50% 52%;
+    --primary-foreground: 160 30% 8%;
+    --secondary: 160 8% 17%;
+    --secondary-foreground: 150 12% 90%;
+    --muted: 160 8% 16%;
+    --muted-foreground: 152 8% 63%;
+    --accent: 160 20% 18%;
+    --accent-foreground: 150 12% 92%;
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 160 8% 20%;
+    --input: 160 8% 26%;
+    --ring: 158 50% 52%;
+    --elective: 38 85% 62%;
+    --elective-soft: 35 45% 16%;
+    --block: 160 35% 20%;
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-size: 14px;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

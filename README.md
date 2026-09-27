@@ -52,6 +52,9 @@ python -m ntu_courses crawl --limit 5 --data /tmp/t   # trial run: first 5 progr
 
 # List saved snapshots (* marks LATEST)
 python -m ntu_courses snapshots
+
+# Export the newest data of every crawled semester for the web UI (offline)
+python -m ntu_courses export-web
 ```
 
 The global option `--delay` (default 0.5 s) sets the minimum interval between requests. It goes before the subcommand, e.g. `python -m ntu_courses --delay 1 crawl`. A semester has about 680 programme/year options, so a full crawl takes roughly 15–20 minutes. Redirecting output to a log file is recommended:
@@ -143,6 +146,34 @@ client = NTUClient()
 courses = client.courses(Semester(2026, "1"), "CSC;;1;F")   # list[Course]
 ```
 
+## Web UI
+
+`web/` is a React + TypeScript + Tailwind + shadcn/ui app (scaffolded with the `web-artifacts-builder` skill). Pick a semester (every crawled semester appears, by its NTU label) and a programme (all programmes, including those with no classes), search by course code, title or description, and open a course to see its details, all its indexes and a weekly timetable for the selected index.
+
+It reads static JSON, so there is no backend. Export the newest data of every crawled semester first:
+
+```bash
+python -m ntu_courses export-web      # writes web/public/data/semesters.json and <key>.json
+```
+
+Then, with Node 20+ and pnpm:
+
+```bash
+cd web
+pnpm install
+pnpm dev            # development server with hot reload
+pnpm run bundle     # single-file build: bundle.html (+ dist/artifact.html for claude.ai)
+```
+
+`bundle.html` contains the whole app but not the data. To host it, put it next to a `data/` folder holding the exported JSON and serve the folder with any static file server, e.g.:
+
+```bash
+mkdir -p site && cp web/bundle.html site/index.html && cp -r web/public/data site/
+python -m http.server -d site 8000
+```
+
+After every crawl, run `export-web` again; a semester you crawled earlier stays in the dropdown.
+
 ## Tests
 
 ```bash
@@ -161,5 +192,10 @@ ntu_courses/
   client.py     HTTP (retries, rate limiting), programme mapping between the two sites, description fill-in by course code
   crawler.py    whole-semester crawl, de-duplication, conversion of older data formats
   snapshot.py   snapshot archive read/write
+  export.py     static JSON export for the web UI
   __main__.py   command line
+web/
+  src/lib/data.ts        data loading, programme grouping, search, time helpers
+  src/components/        programme picker, course list, course detail, weekly timetable
+  scripts/bundle.sh      single-file build
 ```

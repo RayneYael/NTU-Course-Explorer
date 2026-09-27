@@ -1,0 +1,6 @@
+# Native build scripts needed by Parcel (used by the single-file bundle step)
+allowBuilds:
+  '@parcel/watcher': true
+  '@swc/core': true
+  lmdb: true
+  msgpackr-extract: true
