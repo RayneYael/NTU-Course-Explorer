@@ -17,3 +17,7 @@ venv/
 
 # Local static site built from web/bundle.html (see README)
 site/
+
+# Local development only (not published)
+tests/
+pytest.ini
