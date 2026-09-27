@@ -174,6 +174,17 @@ python -m http.server -d site 8000
 
 After every crawl, run `export-web` again; a semester you crawled earlier stays in the dropdown.
 
+### Deploy to GitHub Pages
+
+```bash
+scripts/deploy_pages.sh            # export data, build, commit to gh-pages and push
+scripts/deploy_pages.sh --dry-run  # same, but only commit locally
+```
+
+The script runs `export-web` and the single-file build, then commits `index.html` and `data/` to the `gh-pages` branch in a temporary git worktree. The `main` branch and your working tree are not touched, and data still isn't committed to `main`. Each deploy is a normal commit, so earlier versions of the site stay in the branch history. Pages serves the branch at `https://<owner>.github.io/<repo>/` (enable it once under **Settings → Pages → Deploy from a branch → gh-pages / root**).
+
+Typical update: `python -m ntu_courses crawl`, then `scripts/deploy_pages.sh`.
+
 ## Tests
 
 ```bash

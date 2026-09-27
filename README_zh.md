@@ -174,6 +174,17 @@ python -m http.server -d site 8000
 
 每次抓取后重新运行一次 `export-web`；之前抓过的学期仍会保留在下拉框里。
 
+### 部署到 GitHub Pages
+
+```bash
+scripts/deploy_pages.sh            # 导出数据、打包、提交到 gh-pages 并推送
+scripts/deploy_pages.sh --dry-run  # 同上，但只在本地提交，不推送
+```
+
+脚本会先运行 `export-web` 和单文件打包，然后在一个临时的 git worktree 里把 `index.html` 和 `data/` 提交到 `gh-pages` 分支。`main` 分支和你的工作区都不会被改动，数据也仍然不会提交到 `main`。每次部署都是一个普通提交，网站的历史版本会保留在分支历史里。Pages 会在 `https://<owner>.github.io/<repo>/` 提供访问（首次需要在 **Settings → Pages → Deploy from a branch → gh-pages / root** 启用一次）。
+
+日常更新流程：先 `python -m ntu_courses crawl`，再 `scripts/deploy_pages.sh`。
+
 ## 测试
 
 ```bash
